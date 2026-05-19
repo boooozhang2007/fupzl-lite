@@ -75,7 +75,7 @@ def _load_bool(primary_key: str, default: bool, alias_keys: tuple[str, ...] = ()
 def _cookie_refresh_enabled_from_env() -> bool:
     return _load_bool(
         "LITEFUPZL_COOKIE_REFRESH_ENABLED",
-        False,
+        True,
         alias_keys=("FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED",),
     )
 

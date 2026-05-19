@@ -10,7 +10,7 @@ on:
       cookie_refresh_enabled:
         description: Enable production cookie refresh write-back for this manual run
         required: false
-        default: "false"
+        default: "true"
       cookie_refresh_probe:
         description: Run a dedicated redacted GitHub secret persistence probe
         required: false
@@ -41,7 +41,7 @@ jobs:
       LITEFUPZL_BROWSER: ${{ vars.LITEFUPZL_BROWSER || vars.FUCKPZL_ONESHOT_BROWSER || 'chromium' }}
       LITEFUPZL_PROXY_SERVER: ${{ vars.LITEFUPZL_PROXY_SERVER || vars.FUCKPZL_ONESHOT_PROXY_SERVER || 'http://127.0.0.1:1080' }}
       LITEFUPZL_VIRTUAL_DISPLAY: ${{ vars.LITEFUPZL_VIRTUAL_DISPLAY || vars.FUCKPZL_ONESHOT_VIRTUAL_DISPLAY || 'true' }}
-      LITEFUPZL_COOKIE_REFRESH_ENABLED: ${{ github.event_name == 'workflow_dispatch' && inputs.cookie_refresh_enabled || vars.LITEFUPZL_COOKIE_REFRESH_ENABLED || vars.FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED || 'false' }}
+      LITEFUPZL_COOKIE_REFRESH_ENABLED: ${{ github.event_name == 'workflow_dispatch' && inputs.cookie_refresh_enabled || vars.LITEFUPZL_COOKIE_REFRESH_ENABLED || vars.FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED || 'true' }}
       LITEFUPZL_COOKIE_REFRESH_PROBE_SECRET: LITEFUPZL_COOKIE_REFRESH_PROBE
 
     steps:

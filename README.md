@@ -34,7 +34,7 @@ LITEFUPZL_BROWSER=chromium
 LITEFUPZL_PROXY_SERVER=
 LITEFUPZL_VIRTUAL_DISPLAY=true
 LITEFUPZL_OUTPUT_DIR=output/litefupzl
-LITEFUPZL_COOKIE_REFRESH_ENABLED=false
+LITEFUPZL_COOKIE_REFRESH_ENABLED=true
 ```
 
 Run the main read-only job:
@@ -186,12 +186,12 @@ Number of recent workflow runs to keep during cleanup. Default: `15`.
 #### `LITEFUPZL_COOKIE_REFRESH_ENABLED`
 
 Cookie refresh switch for local runs and scheduled GitHub Actions runs. Default:
-`false`.
+`true`.
 
 For scheduled GitHub Actions runs, set repository variable
-`LITEFUPZL_COOKIE_REFRESH_ENABLED=true` only if refreshed cookies should be
-validated and written back automatically. Manual runs use the
-`cookie_refresh_enabled` workflow input for that single run.
+`LITEFUPZL_COOKIE_REFRESH_ENABLED=false` only if you want to disable automatic
+validated cookie write-back. Manual runs use the `cookie_refresh_enabled`
+workflow input for that single run.
 
 ## Manual workflow inputs
 
@@ -204,8 +204,8 @@ Optional manual runtime override. Leave empty to use
 
 #### `cookie_refresh_enabled`
 
-Set to `true` only for a manual run where refreshed cookies should be validated
-and written back to `LITEFUPZL_COOKIES_JSON`.
+Default: `true`. Set to `false` only for a manual run where refreshed cookies
+should not be written back to `LITEFUPZL_COOKIES_JSON`.
 
 Scheduled runs do not read this manual input. They use repository variable
 `LITEFUPZL_COOKIE_REFRESH_ENABLED` instead.
@@ -261,7 +261,7 @@ For each observed `/topics/timings` request, diagnostics include:
 
 ## Cookie refresh behavior
 
-Cookie refresh is opt-in. It is disabled by default.
+Cookie refresh is enabled by default.
 
 Manual runs use the `cookie_refresh_enabled` workflow input. Scheduled runs use
 repository variable `LITEFUPZL_COOKIE_REFRESH_ENABLED`.

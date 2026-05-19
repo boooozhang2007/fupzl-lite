@@ -36,6 +36,8 @@ def test_artifacts_upload_is_manual_opt_in_for_both_workflows():
 
 def test_oneshot_workflow_removed_write_action_env_and_schedule_uses_refresh_variable():
     workflow = load_workflow("oneshot.yml")
+    inputs = workflow[True]["workflow_dispatch"]["inputs"]
+    assert inputs["cookie_refresh_enabled"]["default"] == "true"
     env = workflow["jobs"]["oneshot"]["env"]
     forbidden_env = [key for key in env if "LIKE" in key or "LOTTERY" in key]
     assert forbidden_env == []
@@ -44,7 +46,7 @@ def test_oneshot_workflow_removed_write_action_env_and_schedule_uses_refresh_var
     assert "inputs.cookie_refresh_enabled" in refresh_expr
     assert "vars.LITEFUPZL_COOKIE_REFRESH_ENABLED" in refresh_expr
     assert "vars.FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED" in refresh_expr
-    assert "|| 'false'" in refresh_expr
+    assert "|| 'true'" in refresh_expr
     assert "inputs.cookie_refresh_enabled == 'true' && 'true' || 'false'" not in refresh_expr
 
 

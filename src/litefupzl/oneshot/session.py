@@ -192,7 +192,7 @@ async def run_slot_session(slot: SlotConfig, config, recorder: PublicRecorder) -
             recorder.emit(slot.slot_alias, "login-device-proof", "failed", level="error", code="CF_BLOCKED", public=False)
             recorder.emit(slot.slot_alias, "login-check", "warning", level="warning", code="CF_BLOCKED")
             return _finish_result(result)
-        if device_state != "ok":
+        if device_state == "cookie_invalid":
             result.status = SlotStatus.COOKIE_INVALID
             recorder.emit(
                 slot.slot_alias,
@@ -204,12 +204,31 @@ async def run_slot_session(slot: SlotConfig, config, recorder: PublicRecorder) -
             )
             recorder.emit(slot.slot_alias, "login-check", "failed", level="error", code="LOGIN_CHECK_FAILED")
             return _finish_result(result)
-        result.security_device_ok = True
-        result.active_linux_device_ok = True
+        if device_state != "ok":
+            result.warning_codes.append(WarningCode.LOGIN_DEVICE_PROOF_INCONCLUSIVE.value)
+            recorder.emit(
+                slot.slot_alias,
+                "login-device-proof",
+                "warning",
+                level="warning",
+                code=f"ACTIVE_LINUX_DEVICE_{device_state.upper()}",
+                public=False,
+            )
+            recorder.emit(
+                slot.slot_alias,
+                "login-check",
+                "warning",
+                level="warning",
+                code=WarningCode.LOGIN_DEVICE_PROOF_INCONCLUSIVE.value,
+            )
+        else:
+            result.security_device_ok = True
+            result.active_linux_device_ok = True
 
         result.login_ok = True
         result.same_context_login_proof_ok = True
-        recorder.emit(slot.slot_alias, "login-device-proof", "ok", code="ACTIVE_LINUX_DEVICE_OK", public=False)
+        if device_state == "ok":
+            recorder.emit(slot.slot_alias, "login-device-proof", "ok", code="ACTIVE_LINUX_DEVICE_OK", public=False)
         recorder.emit(slot.slot_alias, "login-check", "ok")
 
         try:

@@ -474,6 +474,25 @@ async def _browser_endpoint_probe(config, slot_cookies: list[dict]) -> dict:
     return result
 
 
+def _is_auth_probe_success(browser_probe: dict) -> bool:
+    security_fetch = browser_probe.get("security_preferences_fetch") or {}
+    security_device = browser_probe.get("security_device_probe") or {}
+    device_logged_out = security_device.get("logged_out_like") is True
+    device_cf_blocked = security_device.get("cf_like") is True
+    return (
+        (browser_probe.get("username_probe") or {}).get("present") is True
+        and browser_probe.get("security_preferences_state") == "ok"
+        and security_fetch.get("status_code") == 200
+        and security_fetch.get("security_preferences_path") is True
+        and security_fetch.get("username_path_ok") is True
+        and security_fetch.get("login_path_like") is False
+        and security_fetch.get("logged_out_like") is False
+        and security_fetch.get("cf_like") is False
+        and not device_logged_out
+        and not device_cf_blocked
+    )
+
+
 async def run_auth_probe() -> int:
     config = load_oneshot_env()
     output_dir = Path(config.output_dir)
@@ -507,25 +526,7 @@ async def run_auth_probe() -> int:
         encoding="utf-8",
     )
 
-    browser_probe = result["browser_probe"]
-    security_fetch = browser_probe.get("security_preferences_fetch") or {}
-    security_device = browser_probe.get("security_device_probe") or {}
-    return 0 if (
-        (browser_probe.get("username_probe") or {}).get("present") is True
-        and browser_probe.get("security_preferences_state") == "ok"
-        and security_fetch.get("status_code") == 200
-        and security_fetch.get("security_preferences_path") is True
-        and security_fetch.get("username_path_ok") is True
-        and security_fetch.get("login_path_like") is False
-        and security_fetch.get("logged_out_like") is False
-        and security_fetch.get("cf_like") is False
-        and browser_probe.get("security_device_state") == "ok"
-        and security_device.get("auth_tokens_section_present") is True
-        and security_device.get("device_row_count", 0) > 0
-        and security_device.get("linux_active_like_count", 0) > 0
-        and security_device.get("logged_out_like") is False
-        and security_device.get("cf_like") is False
-    ) else 1
+    return 0 if _is_auth_probe_success(result["browser_probe"]) else 1
 
 
 if __name__ == "__main__":

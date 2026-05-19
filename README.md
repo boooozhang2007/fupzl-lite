@@ -12,8 +12,8 @@ It does not like posts, reply, create topics, or send write-action requests.
 - Cookie login proof with authenticated browser-session checks.
 - Read-only topic browsing with human-like scrolling and retry behavior.
 - Per-browser `/topics/timings` status diagnostics in redacted logs.
-- Optional manual cookie refresh with validation before writing a GitHub secret.
-- Scheduled runs stay read-only and never refresh cookies.
+- Optional cookie refresh with validation before writing a GitHub secret.
+- Manual and scheduled runs share the same cookie-refresh switch.
 - GitHub Actions run cleanup with recent-run retention.
 - Artifact upload is disabled by default and must be enabled per manual run.
 
@@ -185,11 +185,13 @@ Number of recent workflow runs to keep during cleanup. Default: `15`.
 
 #### `LITEFUPZL_COOKIE_REFRESH_ENABLED`
 
-Cookie refresh switch for local runs. Keep this `false` unless you are doing a
-manual refresh test.
+Cookie refresh switch for local runs and scheduled GitHub Actions runs. Default:
+`false`.
 
-In GitHub Actions, use the manual workflow input `cookie_refresh_enabled`
-instead. Scheduled runs always force cookie refresh off.
+For scheduled GitHub Actions runs, set repository variable
+`LITEFUPZL_COOKIE_REFRESH_ENABLED=true` only if refreshed cookies should be
+validated and written back automatically. Manual runs use the
+`cookie_refresh_enabled` workflow input for that single run.
 
 ## Manual workflow inputs
 
@@ -205,7 +207,8 @@ Optional manual runtime override. Leave empty to use
 Set to `true` only for a manual run where refreshed cookies should be validated
 and written back to `LITEFUPZL_COOKIES_JSON`.
 
-Scheduled runs ignore this and never write cookies.
+Scheduled runs do not read this manual input. They use repository variable
+`LITEFUPZL_COOKIE_REFRESH_ENABLED` instead.
 
 #### `cookie_refresh_probe`
 
@@ -258,7 +261,10 @@ For each observed `/topics/timings` request, diagnostics include:
 
 ## Cookie refresh behavior
 
-Cookie refresh is opt-in and manual-only.
+Cookie refresh is opt-in. It is disabled by default.
+
+Manual runs use the `cookie_refresh_enabled` workflow input. Scheduled runs use
+repository variable `LITEFUPZL_COOKIE_REFRESH_ENABLED`.
 
 When enabled, the runner:
 

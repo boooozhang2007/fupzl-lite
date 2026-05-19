@@ -1538,8 +1538,6 @@ async def _validate_cookie_refresh_candidate_via_fresh_browser(cookie_string: st
 
 
 async def _maybe_refresh_cookie_secret(context, slot: SlotConfig, config) -> bool:
-    if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
-        return False
     if not getattr(config, "cookie_refresh_enabled", False):
         return False
 

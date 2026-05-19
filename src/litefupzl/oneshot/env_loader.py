@@ -73,11 +73,11 @@ def _load_bool(primary_key: str, default: bool, alias_keys: tuple[str, ...] = ()
 
 
 def _cookie_refresh_enabled_from_env() -> bool:
-    requested = _load_bool("LITEFUPZL_COOKIE_REFRESH_ENABLED", False, alias_keys=("FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED",))
-    if not requested:
-        return False
-    # GitHub scheduled runs must never mutate the shared cookie secret.
-    return os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    return _load_bool(
+        "LITEFUPZL_COOKIE_REFRESH_ENABLED",
+        False,
+        alias_keys=("FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED",),
+    )
 
 
 def load_oneshot_env() -> OneShotEnvConfig:

@@ -20,7 +20,7 @@ def _step(workflow: dict, job: str, name: str) -> dict:
 
 
 def test_artifacts_upload_is_manual_opt_in_for_both_workflows():
-    for filename, job in [("phase3-oneshot.yml", "oneshot"), ("phase3-probes.yml", "probe")]:
+    for filename, job in [("oneshot.yml", "oneshot"), ("probes.yml", "probe")]:
         workflow = load_workflow(filename)
         inputs = workflow[True]["workflow_dispatch"]["inputs"]
         assert inputs["upload_artifacts"]["default"] == "false"
@@ -34,25 +34,29 @@ def test_artifacts_upload_is_manual_opt_in_for_both_workflows():
         assert "output/phase3" not in upload["with"]["path"]
 
 
-def test_oneshot_workflow_removed_write_action_env_and_schedule_disables_cookie_refresh():
-    workflow = load_workflow("phase3-oneshot.yml")
+def test_oneshot_workflow_removed_write_action_env_and_schedule_uses_refresh_variable():
+    workflow = load_workflow("oneshot.yml")
     env = workflow["jobs"]["oneshot"]["env"]
     forbidden_env = [key for key in env if "LIKE" in key or "LOTTERY" in key]
     assert forbidden_env == []
     refresh_expr = env["LITEFUPZL_COOKIE_REFRESH_ENABLED"]
     assert "github.event_name == 'workflow_dispatch'" in refresh_expr
-    assert "inputs.cookie_refresh_enabled == 'true'" in refresh_expr
+    assert "inputs.cookie_refresh_enabled" in refresh_expr
+    assert "vars.LITEFUPZL_COOKIE_REFRESH_ENABLED" in refresh_expr
+    assert "vars.FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED" in refresh_expr
     assert "|| 'false'" in refresh_expr
+    assert "inputs.cookie_refresh_enabled == 'true' && 'true' || 'false'" not in refresh_expr
+
+
+def test_probe_workflow_never_refreshes_cookies():
+    workflow = load_workflow("probes.yml")
+    env = workflow["jobs"]["probe"]["env"]
+    assert env["LITEFUPZL_COOKIE_REFRESH_ENABLED"] == "false"
 
 
 def test_cleanup_old_workflow_runs_keeps_pagination_and_retention():
-    for filename, job in [("phase3-oneshot.yml", "oneshot"), ("phase3-probes.yml", "probe")]:
+    for filename, job in [("oneshot.yml", "oneshot"), ("probes.yml", "probe")]:
         workflow = load_workflow(filename)
-        env = workflow["jobs"][job]["env"]
-        assert env["LITEFUPZL_COOKIE_REFRESH_ENABLED"] in (
-            "false",
-            "${{ github.event_name == 'workflow_dispatch' && inputs.cookie_refresh_enabled == 'true' && 'true' || 'false' }}",
-        )
         cleanup = _step(workflow, job, "Cleanup old workflow runs")
         assert cleanup["env"]["ACTIONS_RUNS_KEEP"] == "${{ vars.LITEFUPZL_ACTIONS_RUNS_KEEP || vars.FUCKPZL_ACTIONS_RUNS_KEEP || '15' }}"
         script = cleanup["run"]
@@ -63,7 +67,7 @@ def test_cleanup_old_workflow_runs_keeps_pagination_and_retention():
 
 
 def test_workflows_install_selected_browser_backend():
-    for filename, job in [("phase3-oneshot.yml", "oneshot"), ("phase3-probes.yml", "probe")]:
+    for filename, job in [("oneshot.yml", "oneshot"), ("probes.yml", "probe")]:
         workflow = load_workflow(filename)
         install = _step(workflow, job, "Install dependencies")
         script = install["run"]

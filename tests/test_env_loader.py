@@ -23,7 +23,7 @@ def test_env_loader_requires_only_cookie_and_no_like_lottery(monkeypatch):
     assert not hasattr(config, "lottery_emojis")
 
 
-def test_scheduled_cookie_refresh_is_forced_disabled(monkeypatch):
+def test_scheduled_cookie_refresh_can_opt_in_via_same_env(monkeypatch):
     from litefupzl.oneshot.env_loader import load_oneshot_env
 
     monkeypatch.setenv("LITEFUPZL_COOKIES_JSON", json.dumps(["_t=redacted"]))
@@ -32,7 +32,7 @@ def test_scheduled_cookie_refresh_is_forced_disabled(monkeypatch):
 
     config = load_oneshot_env()
 
-    assert config.cookie_refresh_enabled is False
+    assert config.cookie_refresh_enabled is True
 
 
 def test_manual_cookie_refresh_can_opt_in(monkeypatch):
@@ -45,6 +45,19 @@ def test_manual_cookie_refresh_can_opt_in(monkeypatch):
     config = load_oneshot_env()
 
     assert config.cookie_refresh_enabled is True
+
+
+def test_cookie_refresh_default_remains_disabled_for_schedule(monkeypatch):
+    from litefupzl.oneshot.env_loader import load_oneshot_env
+
+    monkeypatch.setenv("LITEFUPZL_COOKIES_JSON", json.dumps(["_t=redacted"]))
+    monkeypatch.delenv("LITEFUPZL_COOKIE_REFRESH_ENABLED", raising=False)
+    monkeypatch.delenv("FUCKPZL_ONESHOT_COOKIE_REFRESH_ENABLED", raising=False)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
+
+    config = load_oneshot_env()
+
+    assert config.cookie_refresh_enabled is False
 
 
 def test_legacy_cookie_env_alias_is_still_supported(monkeypatch):
